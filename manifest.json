@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "LeetCelebrate",
+  "version": "1.0",
+  "description": "Celebrate your LeetCode victories with animations, sounds, and gamification!",
+  "permissions": [
+    "storage",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://leetcode.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/problems/*/submissions/*", "https://leetcode.com/submissions/detail/*", "https://leetcode.com/problems/*"],
+      "js": ["sound.js", "content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*", "icons/*"],
+      "matches": ["https://leetcode.com/*"]
+    }
+  ]
+}

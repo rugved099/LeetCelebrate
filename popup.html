@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>LeetCelebrate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Science+Gothic:wght@100..900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-slate: #0f172a;
+      --glass-bg: rgba(30, 41, 59, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #94a3b8; /* Grey themed accent */
+      --glow: rgba(148, 163, 184, 0.3);
+    }
+
+    body {
+      width: 320px;
+      min-height: 460px;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-slate);
+      color: var(--text-main);
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(30, 41, 59, 0.5) 0, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.5) 0, transparent 50%);
+    }
+
+    .container {
+      padding: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
+    .logo {
+      font-family: 'Science Gothic', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+      text-transform: uppercase;
+      text-shadow: 0 0 20px var(--glow);
+    }
+
+    .level-container {
+      background: var(--glass-bg);
+      backdrop-filter: blur(8px);
+      padding: 20px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+      border: 1px solid var(--glass-border);
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .level-badge {
+      position: absolute;
+      top: -12px;
+      right: 20px;
+      background: #334155;
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.875rem;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .xp-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      margin: 16px 0 8px;
+      overflow: hidden;
+    }
+
+    .xp-bar-fill {
+      height: 100%;
+      background: linear-gradient(to right, #64748b, #94a3b8);
+      border-radius: 10px;
+      width: 0%;
+      transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: 0 0 10px var(--glow);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--glass-bg);
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid var(--glass-border);
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .achievements-section h3 {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+
+    .achievement-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .achievement-item {
+      width: 44px;
+      height: 44px;
+      background: var(--glass-bg);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      border: 1px solid var(--glass-border);
+      filter: grayscale(1);
+      opacity: 0.2;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .achievement-item.unlocked {
+      filter: grayscale(0);
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">LeetCelebrate</div>
+    </header>
+
+    <div class="level-container">
+      <div class="level-badge">LVL <span id="level-val">1</span></div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Efficiency Protocol</div>
+      <div id="xp-val" style="font-size: 1.25rem; font-weight: 700; margin-top: 8px; color: #fff;">0 / 100 XP</div>
+      <div class="xp-bar-bg">
+        <div class="xp-bar-fill" id="xp-fill"></div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-value" id="streak-val">0</span>
+        <span class="stat-label">Velocity</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="solved-val">0</span>
+        <span class="stat-label">Nodes</span>
+      </div>
+    </div>
+
+    <div class="achievements-section">
+      <h3>Milestones</h3>
+      <div class="achievement-list" id="achievement-list">
+        <!-- Achievements will be injected here -->
+      </div>
+    </div>
+
+    <button id="test-btn" style="width: 100%; margin-top: 24px; padding: 12px; background: rgba(255,255,255,0.03); color: var(--text-muted); border: 1px dashed var(--glass-border); border-radius: 12px; cursor: pointer; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s;">
+      Initialize Protocol (Demo)
+    </button>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
