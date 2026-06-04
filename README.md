@@ -42,4 +42,4 @@ To use LeetCelebrate in your Chrome browser while it's in development, follow th
 
 ---
 
-*Made with ❤️ for the LeetCode Community.*
+*By rugved099*
