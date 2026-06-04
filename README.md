@@ -31,7 +31,7 @@ To use LeetCelebrate in your Chrome browser while it's in development, follow th
 3.  Enable **Developer mode** using the toggle in the top-right corner.
 4.  Click the **Load unpacked** button.
 5.  Select the folder containing this repository (`LeetCelebrate`).
-6.  **Pin the extension** by clicking the puzzle icon 🧩 in your toolbar and clicking the pin 📌 next to LeetCelebrate.
+6.  **Pin the extension** by clicking the puzzle icon  in your toolbar and clicking the pin next to LeetCelebrate.
 
 ## 🎮 How to Use
 
