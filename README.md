@@ -2,7 +2,7 @@
 
 **LeetCelebrate** is a premium Chrome Extension designed to turn the LeetCode grind into a rewarding, addictive, and gamified experience. Instead of just seeing a green "Accepted" text, celebrate your victories with high-fidelity animations, triumph sounds, and a comprehensive achievement system.
 
-![LeetCelebrate Branding](icons/icon128.png)
+![LeetCelebrate Branding](icons/logo.png)
 
 ## ✨ Features
 
