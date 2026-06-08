@@ -1,147 +1,231 @@
-// Visual confirmation that script is running (using your logo)
-let lastSolvedProblem = null;
-const statusIndicator = document.createElement('div');
-statusIndicator.style.cssText = 'position:fixed;top:15px;right:15px;z-index:999999;width:32px;height:32px;border-radius:8px;background:rgba(15, 23, 42, 0.8);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid rgba(16, 185, 129, 0.3);box-shadow:0 0 15px rgba(16, 185, 129, 0.2);transition:all 0.3s;';
-statusIndicator.innerHTML = `<img src="${chrome.runtime.getURL('icons/logo.svg')}" style="width:20px;height:20px;filter:drop-shadow(0 0 5px rgba(16, 185, 129, 0.5));">`;
-statusIndicator.title = 'LeetCelebrate: Active';
-statusIndicator.onclick = () => handleSuccess('Test Problem', 'Hard');
-statusIndicator.onmouseover = () => statusIndicator.style.transform = 'scale(1.1)';
-statusIndicator.onmouseout = () => statusIndicator.style.transform = 'scale(1.0)';
-document.body.appendChild(statusIndicator);
+/**
+ * LeetCelebrate — content.js  (isolated world)
+ *
+ * Detection strategy:
+ *   A) postMessage from interceptor.js (MAIN world) → poll /check/ API
+ *   B) DOM MutationObserver fallback — watches for fresh "Accepted" result
+ */
 
-function findTextEverywhere(query) {
-  const lowerQuery = query.toLowerCase();
-  // Check main document
-  if (document.body.innerText.toLowerCase().includes(lowerQuery)) return true;
-  
-  // Check all shadow roots
-  const allElements = document.querySelectorAll('*');
-  for (const el of allElements) {
-    if (el.shadowRoot && el.shadowRoot.textContent.toLowerCase().includes(lowerQuery)) return true;
-  }
-  return false;
+// ── Prevent double-init on SPA navigation ─────────────────────────────────────
+if (!window.__lcContentInit) {
+  window.__lcContentInit = true;
+  init();
 }
 
-// MutationObserver...
+function init() {
 
-// Demo event listener for demonstration purposes
-window.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'celebrate_demo') {
-    handleSuccess('Demo Problem', 'Hard');
-  }
+/* ─────────────────────────────────────────────────────────────────────────────
+   A) Listen for submission ID posted by interceptor.js
+   ──────────────────────────────────────────────────────────────────────────── */
+const polled = new Set();
+
+window.addEventListener('message', (e) => {
+  if (!e.data || e.data.source !== 'lc-intercept' || e.data.type !== 'SUBMIT_ID') return;
+  const id = e.data.id;
+  if (!id || polled.has(String(id))) return;
+  polled.add(String(id));
+  console.log('[LeetCelebrate] Got submission ID:', id);
+  pollCheck(id);
 });
 
-// MutationObserver to detect the "Accepted" verdict
-const observer = new MutationObserver((mutations) => {
-  for (const mutation of mutations) {
-    if (mutation.type === 'childList' || mutation.type === 'characterData') {
-      if (findTextEverywhere('Accepted') && (window.location.href.includes('submissions') || document.querySelector('[data-e2e-locator="submission-result"]'))) {
-        const problemTitle = getProblemTitle();
-        const difficulty = getDifficulty();
-        const submissionId = window.location.pathname; 
-        if (lastSolvedProblem !== submissionId) {
-          lastSolvedProblem = submissionId;
-          handleSuccess(problemTitle, difficulty);
-        }
-      }
+function pollCheck(submissionId) {
+  const url = `https://leetcode.com/submissions/detail/${submissionId}/check/`;
+  let n = 0;
+  console.log('[LeetCelebrate] Polling:', url);
+
+  const timer = setInterval(() => {
+    if (++n > 45) {                      // 45 × 2 s = 90 s timeout
+      clearInterval(timer);
+      polled.delete(String(submissionId));
+      console.warn('[LeetCelebrate] Poll timed out for', submissionId);
+      return;
     }
+
+    fetch(url, {
+      credentials: 'include',
+      headers: { 'x-requested-with': 'XMLHttpRequest' }
+    })
+      .then(r => r.json())
+      .then(data => {
+        console.log('[LeetCelebrate] poll #' + n, '→', data.state, '|', data.status_msg);
+        if (data.state !== 'SUCCESS') return;   // still judging
+        clearInterval(timer);
+        polled.delete(String(submissionId));
+        if (data.status_msg === 'Accepted') {
+          console.log('[LeetCelebrate] 🎉 Accepted!');
+          domFallbackUsed = true;               // prevent DOM fallback double-fire
+          handleSuccess(getProblemTitle(), getDifficulty(), String(submissionId));
+        } else {
+          console.log('[LeetCelebrate] Verdict:', data.status_msg);
+        }
+      })
+      .catch(err => console.warn('[LeetCelebrate] poll error:', err.message));
+
+  }, 2000);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   B) DOM MutationObserver fallback
+   Watches for the accepted result panel appearing in the DOM.
+   We look for an element that contains "Accepted" AND a large "N/N testcases passed"
+   count (full submission) — not the Run-Code yellow-box results.
+   We arm the fallback when a "Pending / Judging" state is seen, so we only
+   fire on FRESH submissions, not page-loads or old-submission views.
+   ──────────────────────────────────────────────────────────────────────────── */
+let armed          = false;   // set true when judging state detected
+let domFallbackUsed = false;  // prevent double celebration
+
+function checkDOMForAccepted() {
+  if (!armed || domFallbackUsed) return;
+
+  // Look for the submission result text anywhere in the visible page
+  const body = document.body;
+  if (!body) return;
+
+  const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT, null);
+  let   node;
+  let   foundAccepted = false;
+  let   testcaseNode  = null;
+
+  while ((node = walker.nextNode())) {
+    const t = node.textContent.trim().toLowerCase();
+    if (t === 'accepted') foundAccepted = true;
+    // "1019 / 1019 testcases passed" — the number before "/" must be > 10
+    // (Run-Code only has 2-3 sample cases, full submissions have many more)
+    const m = t.match(/(\d+)\s*\/\s*\d+\s*testcases?\s*passed/);
+    if (m && parseInt(m[1], 10) > 10) testcaseNode = node;
+  }
+
+  if (foundAccepted && testcaseNode) {
+    domFallbackUsed = true;
+    armed = false;
+    console.log('[LeetCelebrate] DOM fallback fired: Accepted + testcases passed detected');
+    handleSuccess(getProblemTitle(), getDifficulty(), 'dom_' + Date.now());
+  }
+}
+
+// Watch for judging state → arm the fallback
+// Watch for DOM changes → run accepted check
+const observer = new MutationObserver(() => {
+  const bodyText = (document.body?.innerText || '').toLowerCase();
+
+  if (!armed) {
+    if (bodyText.includes('judging') || bodyText.includes('pending') || bodyText.includes('evaluating')) {
+      armed = true;
+      domFallbackUsed = false;
+      console.log('[LeetCelebrate] DOM fallback: armed (judging detected)');
+    }
+  } else {
+    // Once armed, check every mutation for accepted result
+    checkDOMForAccepted();
   }
 });
 
 observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 
-// Polling fallback (every 2 seconds) to catch what MutationObserver might miss
-setInterval(() => {
-  const isAcceptedPage = window.location.href.includes('submissions') || 
-                         document.querySelector('[data-e2e-locator="submission-result"]') ||
-                         document.querySelector('.success__3x5z'); // Legacy selector
-                         
-  if (findTextEverywhere('Accepted') && isAcceptedPage) {
-    const submissionId = window.location.pathname; 
-    
-    if (lastSolvedProblem !== submissionId) {
-      console.log('LeetCelebrate: Poller detected Accepted verdict!');
-      const problemTitle = getProblemTitle();
-      const difficulty = getDifficulty();
-      lastSolvedProblem = submissionId;
-      handleSuccess(problemTitle, difficulty);
-    }
-  }
-}, 2000);
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   "Made by Rug" watermark (bottom-right, Science Gothic font)
+   ──────────────────────────────────────────────────────────────────────────── */
+
+// Load Science Gothic from Google Fonts
+const fontLink = document.createElement('link');
+fontLink.rel  = 'stylesheet';
+fontLink.href = 'https://fonts.googleapis.com/css2?family=Science+Gothic&display=swap';
+document.head.appendChild(fontLink);
+
+const watermark = document.createElement('div');
+watermark.id = 'lc-watermark';
+watermark.textContent = 'LEETCELEBRATE-Made by Rug';
+watermark.style.cssText = [
+  'position:fixed',
+  'bottom:18px',
+  'right:20px',
+  'z-index:2147483647',
+  'font-family:"Science Gothic", sans-serif',
+  'font-size:13px',
+  'font-weight:400',
+  'letter-spacing:0.08em',
+  'color:rgba(255,255,255,0.18)',
+  'pointer-events:none',
+  'user-select:none',
+  'text-rendering:optimizeLegibility'
+].join(';');
+document.body.appendChild(watermark);
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Helpers
+   ──────────────────────────────────────────────────────────────────────────── */
 function getProblemTitle() {
-  const titleEl = document.querySelector('span.text-title-large') || 
-                  document.querySelector('a[href*="/problems/"]') || 
-                  document.querySelector('[data-cy="question-title"]');
-  return titleEl ? titleEl.innerText.replace(/^\d+\.\s*/, '') : 'Unknown Problem';
+  const el = document.querySelector('span.text-title-large') ||
+             document.querySelector('[data-cy="question-title"]') ||
+             document.querySelector('a[href*="/problems/"]');
+  return el
+    ? (el.innerText || el.textContent).replace(/^\d+\.\s*/, '').trim()
+    : 'Unknown Problem';
 }
 
 function getDifficulty() {
-  const difficultyEl = document.querySelector('div[class*="text-difficulty-"]') || 
-                        document.querySelector('.difficulty-label');
-  if (!difficultyEl) return 'Medium';
-  const text = difficultyEl.innerText;
-  if (text.includes('Easy')) return 'Easy';
-  if (text.includes('Hard')) return 'Hard';
+  const el = document.querySelector('div[class*="text-difficulty-"]') ||
+             document.querySelector('.difficulty-label');
+  if (!el) return 'Medium';
+  const t = el.innerText || '';
+  if (t.includes('Easy')) return 'Easy';
+  if (t.includes('Hard')) return 'Hard';
   return 'Medium';
 }
 
-function handleSuccess(problemId, difficulty) {
-  const submissionId = window.location.pathname;
-  console.log(`LeetCelebrate: Handling success for ${problemId} (${difficulty}) ID: ${submissionId}`);
-  
-  chrome.runtime.sendMessage({
-    type: 'PROBLEM_SOLVED',
-    problemId,
-    difficulty,
-    submissionId
-  }, (response) => {
-    if (chrome.runtime.lastError) {
-      console.error('LeetCelebrate Error:', chrome.runtime.lastError);
-      return;
-    }
-    
-    if (response && response.alreadyCelebrated) {
-      console.log('LeetCelebrate: Already celebrated this submission, skipping.');
-      return;
-    }
+function handleSuccess(problemId, difficulty, submissionId) {
+  const sid = submissionId || (window.location.pathname + '_' + Date.now());
+  console.log(`[LeetCelebrate] handleSuccess → "${problemId}" (${difficulty}) sid=${sid}`);
 
-    if (response) {
-      triggerCelebration(response.xpGained, response.newAchievements);
+  chrome.runtime.sendMessage(
+    { type: 'PROBLEM_SOLVED', problemId, difficulty, submissionId: sid },
+    (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('[LeetCelebrate]', chrome.runtime.lastError.message);
+        return;
+      }
+      if (response?.alreadyCelebrated) {
+        console.log('[LeetCelebrate] Already celebrated, skipping.');
+        return;
+      }
+      if (response) triggerCelebration(response.xpGained, response.newAchievements);
     }
-  });
+  );
 }
 
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Celebration UI
+   ──────────────────────────────────────────────────────────────────────────── */
 function triggerCelebration(xpGained, newAchievements) {
-  if (window.playSuccessSound) {
-    window.playSuccessSound();
-  }
+  if (window.playSuccessSound) window.playSuccessSound();
 
   const overlay = document.createElement('div');
   overlay.className = 'leet-celebrate-overlay';
-  
+
   const canvas = document.createElement('canvas');
   canvas.className = 'leet-celebrate-canvas';
   overlay.appendChild(canvas);
-  
+
   const text = document.createElement('div');
   text.className = 'celebration-text';
   text.innerText = 'ACCEPTED!';
   overlay.appendChild(text);
 
-  const xpText = document.createElement('div');
-  xpText.className = 'xp-gain';
-  xpText.innerText = `+${xpGained} XP`;
-  overlay.appendChild(xpText);
+  const xpEl = document.createElement('div');
+  xpEl.className = 'xp-gain';
+  xpEl.innerText = `+${xpGained} XP`;
+  overlay.appendChild(xpEl);
 
   document.body.appendChild(overlay);
   startConfetti(canvas);
-  
-  if (newAchievements && newAchievements.length > 0) {
-    newAchievements.forEach((id, index) => {
-      setTimeout(() => showAchievement(id), 1500 + (index * 1000));
-    });
-  }
+
+  (newAchievements || []).forEach((id, i) => {
+    setTimeout(() => showAchievement(id), 1500 + i * 1000);
+  });
 
   setTimeout(() => {
     overlay.style.transition = 'opacity 1s';
@@ -153,20 +237,17 @@ function triggerCelebration(xpGained, newAchievements) {
 function showAchievement(id) {
   const popup = document.createElement('div');
   popup.className = 'achievement-popup';
-  const info = {
-    'FIRST_STEP': { title: 'First Step', icon: '🌱' },
-    'TEN_PROBLEMS': { title: 'Getting Started', icon: '🔥' },
-    'CENTURION': { title: 'Centurion', icon: '💯' },
-    'WEEK_STREAK': { title: 'Consistent', icon: '📅' },
-    'MONTH_STREAK': { title: 'Unstoppable', icon: '🏆' }
-  }[id] || { title: 'Achievement', icon: '⭐' };
+  const info = ({
+    FIRST_STEP:   { title: 'First Step',     icon: '🌱' },
+    TEN_PROBLEMS: { title: 'Getting Started', icon: '🔥' },
+    CENTURION:    { title: 'Centurion',       icon: '💯' },
+    WEEK_STREAK:  { title: 'Consistent',      icon: '📅' },
+    MONTH_STREAK: { title: 'Unstoppable',     icon: '🏆' }
+  })[id] || { title: 'Achievement', icon: '⭐' };
 
   popup.innerHTML = `
     <div class="achievement-icon">${info.icon}</div>
-    <div class="achievement-info">
-      <h4>Achievement Unlocked</h4>
-      <p>${info.title}</p>
-    </div>
+    <div class="achievement-info"><h4>Achievement Unlocked</h4><p>${info.title}</p></div>
   `;
   document.body.appendChild(popup);
   setTimeout(() => popup.classList.add('show'), 100);
@@ -181,34 +262,33 @@ function startConfetti(canvas) {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   const pieces = [];
-  const numberOfPieces = 200;
-  const colors = ['#f00', '#0f0', '#00f', '#ff0', '#0ff', '#f0f', '#ffd700'];
+  const colors = ['#f00','#0f0','#00f','#ff0','#0ff','#f0f','#ffd700'];
 
-  function update() {
+  (function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (pieces.length < numberOfPieces) {
+    if (pieces.length < 200) {
       pieces.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height - canvas.height,
-        rotation: Math.random() * 360,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        size: Math.random() * 10 + 5,
-        speed: Math.random() * 3 + 2,
-        rotSpeed: Math.random() * 10 - 5
+        r: Math.random() * 360,
+        c: colors[Math.random() * colors.length | 0],
+        s: Math.random() * 10 + 5,
+        v: Math.random() * 3 + 2,
+        rs: Math.random() * 10 - 5
       });
     }
     pieces.forEach((p, i) => {
-      p.y += p.speed;
-      p.rotation += p.rotSpeed;
+      p.y += p.v; p.r += p.rs;
       ctx.save();
       ctx.translate(p.x, p.y);
-      ctx.rotate(p.rotation * Math.PI / 180);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      ctx.rotate(p.r * Math.PI / 180);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s);
       ctx.restore();
       if (p.y > canvas.height) pieces.splice(i, 1);
     });
-    requestAnimationFrame(update);
-  }
-  update();
+    requestAnimationFrame(draw);
+  })();
 }
+
+} // end init()

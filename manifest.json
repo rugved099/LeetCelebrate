@@ -24,6 +24,12 @@
   },
   "content_scripts": [
     {
+      "matches": ["https://leetcode.com/problems/*"],
+      "js": ["interceptor.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
       "matches": ["https://leetcode.com/problems/*/submissions/*", "https://leetcode.com/submissions/detail/*", "https://leetcode.com/problems/*"],
       "js": ["sound.js", "content.js"],
       "css": ["styles.css"],
