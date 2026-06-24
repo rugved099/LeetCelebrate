@@ -1,7 +1,7 @@
 /**
  * LeetCelebrate — auth-content.js
  *
- * Runs on http://localhost:5000/auth/success.
+ * Runs on https://leetcelebrate.onrender.com/auth/success.
  * Captures the OAuth access token from the page and passes it to the extension.
  */
 

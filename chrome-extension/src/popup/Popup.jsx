@@ -105,7 +105,7 @@ export default function Popup() {
 
   const handleConnect = () => {
     setStatusMsg({ text: 'Opening GitHub login...', type: 'info' });
-    chrome.tabs.create({ url: 'http://localhost:5000/auth/github' });
+    chrome.tabs.create({ url: 'https://leetcelebrate.onrender.com/auth/github' });
   };
 
   const handleDisconnect = () => {

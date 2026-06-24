@@ -13,8 +13,11 @@
   "host_permissions": [
     "https://leetcode.com/*",
     "https://api.github.com/*",
-    "http://localhost:5000/*"
+    "https://leetcelebrate.onrender.com/*"
   ],
+
+
+  
   "background": {
     "service_worker": "background.js",
     "type": "module"
@@ -33,7 +36,7 @@
       "run_at": "document_idle"
     },
     {
-      "matches": ["http://localhost:5000/auth/success*"],
+      "matches": ["https://leetcelebrate.onrender.com/auth/success*"],
       "js": ["auth-content.js"],
       "run_at": "document_end"
     }
