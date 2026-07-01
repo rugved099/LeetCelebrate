@@ -27,13 +27,23 @@
 
 /* Accepted text burst animation */
 .celebration-text {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 56px;
+  font-family: 'Science gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 65px;
   font-weight: 900;
   letter-spacing: -1px;
-  background: linear-gradient(135deg, #3a86ff 0%, #8338ec 50%, #ff006e 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+ background: linear-gradient(
+  135deg,
+  #4d3300 0%,
+  #8f6b00 15%,
+  #c9a227 35%,
+  #fff1a8 50%,
+  #c9a227 65%,
+  #8f6b00 85%,
+  #3b2500 100%
+);
+
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
   background-clip: text;
   text-shadow: none;
   z-index: 1;
