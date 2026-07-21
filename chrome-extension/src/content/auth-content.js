@@ -1,9 +1,3 @@
-/**
- * LeetCelebrate — auth-content.js
- *
- * Runs on https://leetcelebrate.onrender.com/auth/success.
- * Captures the OAuth access token from the page and passes it to the extension.
- */
 
 (function () {
   console.log('[LeetCode-Sync-Auth] Auth success content script loaded.');
