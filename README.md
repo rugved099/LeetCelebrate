@@ -1,77 +1,77 @@
-# 🏆 LeetCelebrate - LeetCode Gamification & GitHub Auto-Sync
+# LeetCelebrate - LeetCode Gamification and GitHub Auto-Sync
 
-**LeetCelebrate** is a premium Chrome Extension (Manifest V3) designed to turn the LeetCode grind into a rewarding, addictive, and gamified experience while keeping your personal portfolio updated. 
+LeetCelebrate is a Chrome Extension (Manifest V3) designed to turn the LeetCode coding workflow into a gamified experience while keeping your personal portfolio updated.
 
-Instead of just seeing a simple green "Accepted" text, celebrate your victories with high-fidelity canvas confetti animations, procedural success tunes, and a comprehensive XP/leveling system. Simultaneously, the extension can automatically commit and sync your accepted solutions directly to your personal GitHub repository, organized by difficulty, complete with auto-generated metadata and statistics.
+Instead of a simple "Accepted" text, the extension visualizes successful submissions with canvas-based confetti animations, procedural success sounds, and an XP and leveling system. Simultaneously, the extension can automatically commit and sync accepted solutions directly to a personal GitHub repository, organized by difficulty, complete with auto-generated metadata and statistics.
 
 ---
 
-## ⚡ Quick Start: How to Install & Use LeetCelebrate
+## Quick Start: Installation and Usage Guide
 
-Get up and running in less than a minute by following these simple steps:
+Follow these steps to set up and run the extension locally:
 
 ### 1. Install in Chrome
-1. **Fork this repository** by clicking the **Fork** button at the top-right of this page.
-2. **Clone your fork** to your local machine (replace `YOUR_USERNAME` with your GitHub username):
+1. Fork this repository by clicking the **Fork** button at the top-right of this page.
+2. Clone your fork to your local machine (replace `YOUR_USERNAME` with your GitHub username):
    ```bash
    git clone https://github.com/YOUR_USERNAME/LeetCelebrate.git
    ```
-3. Open Google Chrome and navigate to **`chrome://extensions/`**.
+3. Open Google Chrome and navigate to `chrome://extensions/`.
 4. Enable **Developer mode** using the toggle switch in the top-right corner.
-5. Click the **Load unpacked** button (top-left) and select the **`chrome-extension/dist`** folder inside your cloned repository.
-6. Click the puzzle icon in your Chrome toolbar and **pin LeetCelebrate** to make it always visible.
+5. Click the **Load unpacked** button (top-left) and select the `chrome-extension/dist` folder inside your cloned repository.
+6. Click the puzzle icon in your Chrome toolbar and pin **LeetCelebrate** to make it visible.
 
 ### 2. Connect Your GitHub
 1. Click the **LeetCelebrate** icon on your Chrome toolbar.
 2. Click the **Connect GitHub Account** button.
 3. Authorize the application on GitHub. The tab will automatically close once linked.
 
-### 3. Solve & Celebrate!
+### 3. Submitting and Validating Solutions
 1. Open any coding challenge on [LeetCode](https://leetcode.com/problems/).
 2. Submit your solution.
-3. Once your code is **Accepted**, watch the confetti rain down, listen to the victory tune, and check the extension popup to see your level up, XP growth, and streaks! Your solution is now automatically committed to your GitHub profile!
+3. Once your code is accepted, the confetti animation will trigger, the victory sound will play, and the extension popup will update with your level, XP progress, and streaks. Your solution is then automatically committed to your GitHub profile.
 
 ---
 
-## 🏗 Repository Structure
+## Repository Structure
 
-To cater to different usage scenarios, this repository is organized into two main parts:
+This repository is organized into two main parts:
 
-1. **Standalone Extension (Root Directory)**: A lightweight version of the extension written in pure **Vanilla JS & CSS**. It focuses purely on local gamification (XP, levels, sound, animations) with zero external setup, OAuth, or server dependencies.
-2. **Full Extension & Sync Backend (`/chrome-extension` & `/backend`)**: A **React + Vite** version of the extension and its companion **Node/Express backend** that adds automated GitHub Sync capabilities on top of the gamification features.
-
----
-
-## ✨ Features
-
-### 🎮 Gamification & Celebration Engine
-* **🚀 Real-Time Celebration**: Instantly detects the "Accepted" verdict on LeetCode submissions and triggers an immersive celebration sequence.
-* **🎉 High-Fidelity Confetti**: Custom, hardware-accelerated HTML5 Canvas confetti animations.
-* **🎵 Procedural Triumph Sounds**: Dynamic success melodies synthesized in real-time via the Web Audio API (no heavy external audio assets needed).
-* **📈 XP & Leveling**: Earn XP based on problem difficulty:
-  * **Easy**: 50 XP
-  * **Medium**: 100 XP
-  * **Hard**: 250 XP
-* **🔥 Daily Streaks**: Track your consecutive active days and monitor your daily submission velocity.
-* **🏅 Achievements & Milestones**: Unlock badges like *First Step*, *Week Streak*, and *Centurion*.
-* **🎨 Grey Glassmorphism UI**: A sleek, premium dashboard using the **Science Gothic** typography for a futuristic look.
-
-### 🔄 GitHub Solution Auto-Sync
-* **🔑 Secure OAuth Integration**: Connect your GitHub account with a single click through our companion backend server.
-* **📁 Automated Repository Management**: Checks for or creates a dedicated `leetcode-solutions` repository in your GitHub account.
-* **📝 Smart Commit Generation**: Commits solutions organized by difficulty (e.g., `Easy/0001-two-sum/two-sum.py`) containing execution runtime, memory statistics, and language details.
-* **📊 Auto-Updating Repository Index**: Automatically updates a centralized repository `README.md` with complete statistics, progress bars, and linked solutions.
-* **🎛 Auto-Sync Toggles**: Switch between auto-syncing in the background, or queueing submissions to sync manually via the extension popup.
+1. **Standalone Extension (Root Directory)**: A lightweight version of the extension written in pure Vanilla JS and CSS. It focuses on local gamification (XP, levels, sound, animations) with no external setup, OAuth, or server dependencies.
+2. **Full Extension and Sync Backend (`/chrome-extension` & `/backend`)**: A React and Vite version of the extension and its companion Node/Express backend that adds automated GitHub Sync capabilities on top of the gamification features.
 
 ---
 
-## 🛠 Tech Stack
+## Features
+
+### Gamification and Celebration Engine
+* **Real-Time Celebration**: Instantly detects the "Accepted" verdict on LeetCode submissions and triggers the celebration sequence.
+* **Confetti Animations**: Custom, hardware-accelerated HTML5 Canvas confetti animations.
+* **Procedural Sounds**: Dynamic success melodies synthesized in real-time via the Web Audio API (no external audio assets needed).
+* **XP and Leveling System**: Earn XP based on problem difficulty:
+  * Easy: 50 XP
+  * Medium: 100 XP
+  * Hard: 250 XP
+* **Daily Streaks**: Track consecutive active days and monitor daily submission velocity.
+* **Achievements and Milestones**: Unlock badges like First Step, Week Streak, and Centurion.
+* **Glassmorphism User Interface**: A modern dashboard using the Science Gothic typography for a technical look.
+
+### GitHub Solution Auto-Sync
+* **OAuth Integration**: Connect your GitHub account with a single click through the companion backend server.
+* **Automated Repository Management**: Checks for or creates a dedicated `leetcode-solutions` repository in your GitHub account.
+* **Smart Commit Generation**: Commits solutions organized by difficulty (e.g., `Easy/0001-two-sum/two-sum.py`) containing execution runtime, memory statistics, and language details.
+* **Auto-Updating Repository Index**: Automatically updates a centralized repository `README.md` with complete statistics, progress bars, and linked solutions.
+* **Auto-Sync Toggles**: Switch between auto-syncing in the background, or queueing submissions to sync manually via the extension popup.
+
+---
+
+## Tech Stack
 
 ### Chrome Extension (Root & `/chrome-extension`)
-* **Framework**: React 18 & Vite (under `/chrome-extension` folder for build management) / Vanilla JavaScript (in root folder).
-* **Styling**: Vanilla CSS (sleek grey glassmorphism design with responsive grids).
-* **Graphics & Animations**: HTML5 Canvas API (custom physics-based particle system).
-* **Audio Synthesis**: Web Audio API (real-time Oscillator and Gain Nodes for clean, zero-delay sound generation).
+* **Framework**: React 18 and Vite (under the `/chrome-extension` folder for build management) / Vanilla JavaScript (in the root folder).
+* **Styling**: Vanilla CSS (glassmorphism design with responsive grids).
+* **Graphics and Animations**: HTML5 Canvas API (custom physics-based particle system).
+* **Audio Synthesis**: Web Audio API (real-time Oscillator and Gain Nodes for low-latency sound generation).
 * **Data Persistence**: Chrome Extension Storage API (`chrome.storage.local`).
 * **Runtime APIs**: Chrome Scripting & World injection (`world: "MAIN"`) for page execution interceptors.
 
@@ -87,7 +87,7 @@ To cater to different usage scenarios, this repository is organized into two mai
 
 ---
 
-## 📐 System Architecture
+## System Architecture
 
 Below is the execution flow of the Full Sync extension system:
 
@@ -109,14 +109,16 @@ graph TD
     AuthCS -- Save Token --> BG
 ```
 
-## 🚀 Step-by-Step Chrome Setup
+---
 
-Follow these exact steps to fork the repository and install the extension in your Google Chrome browser:
+## Step-by-Step Chrome Setup
+
+Follow these steps to fork the repository and install the extension in your Google Chrome browser:
 
 ### Step 1: Fork & Clone the Repository
 1. Click the **Fork** button at the top-right of this GitHub page to create a copy under your own account.
 2. Open your terminal or command prompt.
-3. Clone your fork locally using the following command (be sure to replace `YOUR_USERNAME` with your actual GitHub username):
+3. Clone your fork locally using the following command (replace `YOUR_USERNAME` with your actual GitHub username):
    ```bash
    git clone https://github.com/YOUR_USERNAME/LeetCelebrate.git
    ```
@@ -132,7 +134,7 @@ Follow these exact steps to fork the repository and install the extension in you
 ### Step 4: Load the Extension
 1. Click the **Load unpacked** button in the top-left corner of the Extensions page.
 2. A file selection dialog will appear. Navigate to the cloned folder on your computer.
-3. Select the **`chrome-extension/dist`** folder inside the cloned folder and click **Select Folder** (or **Open**).
+3. Select the `chrome-extension/dist` folder inside the cloned folder and click **Select Folder** (or **Open**).
    * *Note: This folder contains the pre-compiled version of the extension which is already configured to talk to our live hosted Render backend.*
 
 ### Step 5: Pin the Extension
@@ -142,7 +144,7 @@ Follow these exact steps to fork the repository and install the extension in you
 
 ---
 
-## 🎮 How to Use (Step-by-Step)
+## How to Use
 
 Once you have installed the extension in Chrome, follow this workflow to start syncing and celebrating:
 
@@ -150,7 +152,7 @@ Once you have installed the extension in Chrome, follow this workflow to start s
 * Click the **LeetCelebrate** icon on your Chrome toolbar.
 * Click the **Connect GitHub Account** button.
 * A secure window will open asking you to authorize the app on GitHub. Click **Authorize**.
-* The tab will automatically close, and your account will now be linked!
+* The tab will automatically close, and your account will now be linked.
 
 ### 2. Configure Sync Mode
 * Click the extension icon to open the dashboard popup.
@@ -162,21 +164,21 @@ Once you have installed the extension in Chrome, follow this workflow to start s
 * Go to [LeetCode](https://leetcode.com/problems/) and open any coding challenge.
 * Write your solution and click the **Submit** button.
 
-### 4. Witness the Celebration
-* Once your solution is evaluated and shows **"Accepted"**:
-  1. Colorful **Confetti** will rain down across your LeetCode browser screen.
-  2. A procedural **Triumph Melodic Tune** will play.
-  3. **XP Points** will instantly be added to your profile depending on difficulty (Easy: 50 XP, Medium: 100 XP, Hard: 250 XP).
+### 4. Verification and Celebration
+* Once your solution is evaluated and shows "Accepted":
+  1. Confetti will rain down across your LeetCode browser screen.
+  2. A procedural success melody will play.
+  3. XP points will be added to your profile depending on difficulty (Easy: 50 XP, Medium: 100 XP, Hard: 250 XP).
 
-### 5. Check Progress & Milestones
+### 5. Check Progress and Milestones
 * Click the toolbar icon anytime to view:
   * Your current **Level** and **XP Progress Bar**.
   * Your active **Streak Counter** and submission velocity.
-  * Unlocked **Achievements/Medals** (e.g. *First Step*, *Week Streak*, *Centurion*).
+  * Unlocked **Achievements/Medals** (e.g. First Step, Week Streak, Centurion).
 
 ---
 
-## 🛠️ Developer Customization (Optional)
+## Developer Customization (Optional)
 
 If you want to run your own local OAuth backend server instead of using the Render backend:
 
